@@ -91,3 +91,10 @@ REST_FRAMEWORK = {
 
 # CORS настройки (для Postman и фронтенда)
 CORS_ALLOW_ALL_ORIGINS = True
+
+# Настройки фильтрации
+INSTALLED_APPS += ['django_filters']
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+}
