@@ -1,0 +1,7 @@
+Name        Stmts   Miss  Cover
+-------------------------------
+manage.py      11      2    82%
+-------------------------------
+TOTAL          39      2    95%
+
+2 files skipped due to complete coverage.
