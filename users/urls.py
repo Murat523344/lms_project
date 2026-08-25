@@ -12,5 +12,8 @@ urlpatterns = [
     path('users/<int:pk>/', views.UserDetailView.as_view(), name='user_detail'),
     path('token/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('payments/create/', views.PaymentCreateView.as_view(), name='payment_create'),
+    path('payments/success/', views.PaymentSuccessView.as_view(), name='payment_success'),
+    path('payments/cancel/', views.PaymentCancelView.as_view(), name='payment_cancel'),
     path('', include(router.urls)),
 ]

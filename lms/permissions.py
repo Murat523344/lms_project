@@ -16,7 +16,10 @@ class IsOwner(permissions.BasePermission):
     """
     
     def has_object_permission(self, request, view, obj):
-        return obj.owner == request.user
+        # Проверяем, есть ли у объекта поле owner
+        if hasattr(obj, 'owner'):
+            return obj.owner == request.user
+        return False
 
 
 class IsOwnerOrModerator(permissions.BasePermission):
@@ -27,15 +30,6 @@ class IsOwnerOrModerator(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.user.groups.filter(name='Модератор').exists():
             return True
-        return obj.owner == request.user
-
-
-class IsOwnerOrReadOnly(permissions.BasePermission):
-    """
-    Проверка, что пользователь является владельцем объекта или запрос только на чтение.
-    """
-    
-    def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return obj.owner == request.user
+        if hasattr(obj, 'owner'):
+            return obj.owner == request.user
+        return False

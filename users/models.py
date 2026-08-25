@@ -75,9 +75,11 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Payment(models.Model):
     """Модель платежа."""
     
-    PAYMENT_METHODS = (
-        ('cash', 'Наличные'),
-        ('transfer', 'Перевод на счет'),
+    PAYMENT_STATUS = (
+        ('pending', 'Ожидает оплаты'),
+        ('paid', 'Оплачено'),
+        ('failed', 'Ошибка'),
+        ('canceled', 'Отменено'),
     )
     
     user = models.ForeignKey(
@@ -85,10 +87,6 @@ class Payment(models.Model):
         on_delete=models.CASCADE,
         related_name='payments',
         verbose_name='Пользователь'
-    )
-    payment_date = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата оплаты'
     )
     paid_course = models.ForeignKey(
         'lms.Course',
@@ -111,17 +109,31 @@ class Payment(models.Model):
         decimal_places=2,
         verbose_name='Сумма оплаты'
     )
-    payment_method = models.CharField(
-        max_length=20,
-        choices=PAYMENT_METHODS,
-        default='cash',
-        verbose_name='Способ оплаты'
+    stripe_session_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name='ID сессии Stripe'
     )
+    stripe_payment_status = models.CharField(
+        max_length=20,
+        choices=PAYMENT_STATUS,
+        default='pending',
+        verbose_name='Статус платежа'
+    )
+    payment_url = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        verbose_name='Ссылка на оплату'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         verbose_name = 'Платеж'
         verbose_name_plural = 'Платежи'
-        ordering = ['-payment_date']
+        ordering = ['-created_at']
     
     def __str__(self):
         return f'Платеж {self.id} - {self.user.email} - {self.amount}'

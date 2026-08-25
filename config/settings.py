@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'django_filters',
+    'drf_yasg',  # Документация
     'users',
     'lms',
 ]
@@ -106,3 +107,17 @@ SIMPLE_JWT = {
 
 # CORS настройки
 CORS_ALLOW_ALL_ORIGINS = True
+
+# Stripe настройки
+STRIPE_API_KEY = os.getenv('STRIPE_API_KEY', 'sk_test_...')
+
+# Настройки документации
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
+}

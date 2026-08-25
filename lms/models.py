@@ -60,7 +60,7 @@ class Lesson(models.Model):
     )
     video_url = models.URLField(
         verbose_name='Ссылка на видео',
-        help_text='Введите ссылку на видео'
+        help_text='Введите ссылку на видео (только youtube.com)'
     )
     course = models.ForeignKey(
         Course,
@@ -86,3 +86,29 @@ class Lesson(models.Model):
     
     def __str__(self):
         return f'{self.name} ({self.course.name})'
+
+
+class Subscription(models.Model):
+    """Модель подписки на обновления курса."""
+    
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='subscriptions',
+        verbose_name='Пользователь'
+    )
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name='subscribers',
+        verbose_name='Курс'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+        unique_together = ('user', 'course')  # Гарантия уникальности пары
+    
+    def __str__(self):
+        return f'{self.user.email} - {self.course.name}'

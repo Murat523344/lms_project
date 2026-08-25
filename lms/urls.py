@@ -9,4 +9,5 @@ urlpatterns = [
     path('', include(router.urls)),
     path('lessons/', views.LessonListCreateView.as_view(), name='lesson-list-create'),
     path('lessons/<int:pk>/', views.LessonRetrieveUpdateDestroyView.as_view(), name='lesson-detail'),
+    path('subscriptions/', views.SubscriptionView.as_view(), name='subscription'),
 ]
