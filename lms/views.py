@@ -3,10 +3,12 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from lms.models import Course, Lesson, Subscription
 from lms.serializers import CourseSerializer, LessonSerializer, SubscriptionSerializer
 from lms.permissions import IsModerator, IsOwner, IsOwnerOrModerator
 from lms.paginators import CoursePaginator, LessonPaginator
+from lms.tasks import send_course_update_email
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -33,6 +35,16 @@ class CourseViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+    
+    def perform_update(self, serializer):
+        """При обновлении курса отправляем уведомления подписчикам."""
+        course = self.get_object()
+        updated_course = serializer.save()
+        
+        # Запускаем задачу на отправку писем подписчикам
+        send_course_update_email.delay(course.id)
+        
+        return updated_course
 
 
 class LessonListCreateView(generics.ListCreateAPIView):
