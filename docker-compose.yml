@@ -1,0 +1,109 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: lms_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    networks:
+      - lms_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: lms_redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    expose:
+      - "6379"
+    networks:
+      - lms_network
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lms_web
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    volumes:
+      - .:/app
+      - media_data:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - lms_network
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lms_celery
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    volumes:
+      - .:/app
+      - media_data:/app/media
+    depends_on:
+      - db
+      - redis
+    networks:
+      - lms_network
+    command: celery -A config worker -l info
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lms_celery_beat
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    volumes:
+      - .:/app
+      - media_data:/app/media
+    depends_on:
+      - db
+      - redis
+      - celery
+    networks:
+      - lms_network
+    command: celery -A config beat -l info
+
+volumes:
+  postgres_data:
+  redis_data:
+  media_data:
+
+networks:
+  lms_network:
+    driver: bridge
