@@ -63,3 +63,7 @@
 ## Автор
 
 Мурат — студент Skypro
+
+## Контакты
+
+Email: support@lms.local
