@@ -133,3 +133,16 @@ CELERY_TASK_SOFT_TIME_LIMIT = 20 * 60
 
 # Настройки Celery Beat
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+# Production settings
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+# Static files
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Media files
+MEDIA_ROOT = BASE_DIR / 'media'
