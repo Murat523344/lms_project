@@ -4,7 +4,7 @@ from django.conf import settings
 
 class Course(models.Model):
     """Модель курса."""
-    
+
     name = models.CharField(
         max_length=200,
         verbose_name='Название',
@@ -30,19 +30,19 @@ class Course(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         verbose_name = 'Курс'
         verbose_name_plural = 'Курсы'
         ordering = ['-created_at']
-    
+
     def __str__(self):
         return self.name
 
 
 class Lesson(models.Model):
     """Модель урока."""
-    
+
     name = models.CharField(
         max_length=200,
         verbose_name='Название',
@@ -78,19 +78,19 @@ class Lesson(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         verbose_name = 'Урок'
         verbose_name_plural = 'Уроки'
         ordering = ['created_at']
-    
+
     def __str__(self):
         return f'{self.name} ({self.course.name})'
 
 
 class Subscription(models.Model):
     """Модель подписки на обновления курса."""
-    
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -104,11 +104,11 @@ class Subscription(models.Model):
         verbose_name='Курс'
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         unique_together = ('user', 'course')  # Гарантия уникальности пары
-    
+
     def __str__(self):
         return f'{self.user.email} - {self.course.name}'

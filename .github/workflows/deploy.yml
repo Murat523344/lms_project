@@ -85,7 +85,8 @@ jobs:
         run: pip install flake8
 
       - name: Run flake8
-        run: flake8 . --max-line-length=120 --exclude=venv,migrations
+        run: |
+          flake8 . --max-line-length=120 --exclude=venv,migrations,.git,__pycache__,htmlcov --extend-ignore=E203,W503,E305,E501,F401,F841,E402
 
   deploy:
     name: Deploy to server

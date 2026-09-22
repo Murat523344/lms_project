@@ -1,11 +1,10 @@
-from rest_framework import viewsets, generics, permissions, status
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework import viewsets, generics, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
 from lms.models import Course, Lesson, Subscription
-from lms.serializers import CourseSerializer, LessonSerializer, SubscriptionSerializer
+from lms.serializers import CourseSerializer, LessonSerializer
 from lms.permissions import IsModerator, IsOwner, IsOwnerOrModerator
 from lms.paginators import CoursePaginator, LessonPaginator
 from lms.tasks import send_course_update_email
@@ -13,11 +12,10 @@ from lms.tasks import send_course_update_email
 
 class CourseViewSet(viewsets.ModelViewSet):
     """ViewSet для модели Course с правами доступа."""
-    
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     pagination_class = CoursePaginator
-    
+
     def get_permissions(self):
         if self.action == 'create':
             self.permission_classes = [IsAuthenticated, ~IsModerator]
@@ -32,19 +30,14 @@ class CourseViewSet(viewsets.ModelViewSet):
         else:
             self.permission_classes = [IsAuthenticated]
         return [permission() for permission in self.permission_classes]
-    
+
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
-    
+
     def perform_update(self, serializer):
-        """При обновлении курса отправляем уведомления подписчикам."""
         course = self.get_object()
-        updated_course = serializer.save()
-        
-        # Запускаем задачу на отправку писем подписчикам
+        serializer.save()
         send_course_update_email.delay(course.id)
-        
-        return updated_course
 
 
 class LessonListCreateView(generics.ListCreateAPIView):
@@ -52,14 +45,14 @@ class LessonListCreateView(generics.ListCreateAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
     pagination_class = LessonPaginator
-    
+
     def get_permissions(self):
         if self.request.method == 'POST':
             self.permission_classes = [IsAuthenticated, ~IsModerator]
         else:
             self.permission_classes = [IsAuthenticated]
         return [permission() for permission in self.permission_classes]
-    
+
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
@@ -68,7 +61,7 @@ class LessonRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     """Представление для получения, обновления и удаления урока."""
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
-    
+
     def get_permissions(self):
         if self.request.method == 'GET':
             self.permission_classes = [IsAuthenticated]
@@ -84,21 +77,20 @@ class LessonRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 class SubscriptionView(APIView):
     """Представление для управления подпиской на курс."""
     permission_classes = [IsAuthenticated]
-    
+
     def post(self, request):
         user = request.user
         course_id = request.data.get('course_id')
-        
+
         if not course_id:
             return Response(
                 {'error': 'Необходимо указать course_id'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         course = get_object_or_404(Course, id=course_id)
-        
         subscription = Subscription.objects.filter(user=user, course=course)
-        
+
         if subscription.exists():
             subscription.delete()
             message = 'Подписка удалена'
@@ -107,7 +99,7 @@ class SubscriptionView(APIView):
             Subscription.objects.create(user=user, course=course)
             message = 'Подписка добавлена'
             is_subscribed = True
-        
+
         return Response({
             'message': message,
             'is_subscribed': is_subscribed,
