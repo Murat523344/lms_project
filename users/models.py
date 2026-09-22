@@ -55,6 +55,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
         verbose_name='Фамилия'
     )
+    telegram_chat_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name='Telegram Chat ID'
+    )
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
