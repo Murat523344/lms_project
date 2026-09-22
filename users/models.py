@@ -4,7 +4,7 @@ from django.db import models
 
 class UserManager(BaseUserManager):
     """Менеджер для кастомной модели пользователя."""
-    
+
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError('Email обязателен')
@@ -13,7 +13,7 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
         return user
-    
+
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
@@ -22,7 +22,7 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     """Кастомная модель пользователя с авторизацией по email."""
-    
+
     email = models.EmailField(
         unique=True,
         verbose_name='Электронная почта'
@@ -55,33 +55,39 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
         verbose_name='Фамилия'
     )
+    telegram_chat_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name='Telegram Chat ID'
+    )
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
-    
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
-    
+
     objects = UserManager()
-    
+
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-    
+
     def __str__(self):
         return self.email
 
 
 class Payment(models.Model):
     """Модель платежа."""
-    
+
     PAYMENT_STATUS = (
         ('pending', 'Ожидает оплаты'),
         ('paid', 'Оплачено'),
         ('failed', 'Ошибка'),
         ('canceled', 'Отменено'),
     )
-    
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -129,11 +135,11 @@ class Payment(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         verbose_name = 'Платеж'
         verbose_name_plural = 'Платежи'
         ordering = ['-created_at']
-    
+
     def __str__(self):
         return f'Платеж {self.id} - {self.user.email} - {self.amount}'

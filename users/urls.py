@@ -1,10 +1,8 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from users import views
 
-router = DefaultRouter()
-router.register(r'payments', views.PaymentViewSet, basename='payment')
+app_name = 'users'
 
 urlpatterns = [
     path('register/', views.UserCreateView.as_view(), name='register'),
@@ -12,8 +10,6 @@ urlpatterns = [
     path('users/<int:pk>/', views.UserDetailView.as_view(), name='user_detail'),
     path('token/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('payments/', views.PaymentListView.as_view(), name='payment_list'),
     path('payments/create/', views.PaymentCreateView.as_view(), name='payment_create'),
-    path('payments/success/', views.PaymentSuccessView.as_view(), name='payment_success'),
-    path('payments/cancel/', views.PaymentCancelView.as_view(), name='payment_cancel'),
-    path('', include(router.urls)),
 ]
